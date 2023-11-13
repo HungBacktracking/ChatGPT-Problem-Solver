@@ -47,6 +47,7 @@ def main(args):
         print("Last request: ", last_indx)
         with open('./results/results.txt', 'a') as f:
             for problem in test_examples:
+                print(problem)
                 prompt = "Help me choose the correct answer to the following problem. Note that you only need to return the letters corresponding to the chosen answer. \nQuestion:"
                 ques = problem["Problem"]
                 max_len = 20
