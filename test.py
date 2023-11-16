@@ -1,47 +1,53 @@
 import base64
 import requests
+from openai import OpenAI
 
 # OpenAI API Key
-api_key = "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"
+with open("openai_api_key.txt", "r") as f:
+    api_key = f.readline()
 
 # Function to encode the image
 def encode_image(image_path):
   with open(image_path, "rb") as image_file:
     return base64.b64encode(image_file.read()).decode('utf-8')
 
-# Path to your image
-image_path = "data/diagrams/diagram0.png"
+def describeImage(problem, category, options, base64_image):
+    categoryDetail = ""
+    if category != "":
+       categoryDetail = f"The category of this problem is {category}."
 
-# Getting the base64 string
-base64_image = encode_image(image_path)
+    client = OpenAI(api_key = api_key)
+       
+    response = client.chat.completions.create(
+        model="gpt-4-vision-preview",
+        messages=[
+            {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": f"I have to answer the question:\"{problem}\" {categoryDetail} This image is a necessary part to solve the question. Please find the answer! Note that you only need to return the answer without explain."},
+                {
+                "type": "image_url",
+                "image_url": {
+                    "url": f"data:image/jpeg;base64,{base64_image}",
+                },
+                },
+            ],
+            }
+        ],
+        max_tokens=300,
+    )
 
-headers = {
-  "Content-Type": "application/json",
-  "Authorization": f"Bearer {api_key}"
-}
+    print(response.choices[0].message.content)
+    return response.choices[0].message.content
 
-payload = {
-  "model": "gpt-4-vision-preview",
-  "messages": [
-    {
-      "role": "user",
-      "content": [
-        {
-          "type": "text",
-          "text": "I have to answer the question:\"The figure above shows three spinners A, B and C with numbers on it. If each of every number has an equal probability of being the sector on which the arrow stops, what is the probability that the sum of these three numbers is an even number?\" This image is a necessary part to solve the question. Please find the answer! Note that you only need to return the answer without explain."
-        },
-        {
-          "type": "image_url",
-          "image_url": {
-            "url": f"data:image/jpeg;base64,{base64_image}"
-          }
-        }
-      ]
-    }
-  ],
-  "max_tokens": 300
-}
+if __name__ == "__main__":
+    # Path to your image
+    image_path = "data/diagrams/diagram0.png"
 
-response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
+    # Getting the base64 string
+    base64_image = encode_image(image_path)
 
-print(response.json()['choices'][0]['message']['content'])
+    problem = "The figure above shows three spinners A, B and C with numbers on it. If each of every number has an equal probability of being the sector on which the arrow stops, what is the probability that the sum of these three numbers is an even number?"
+    category = ""
+    options = ""
+    describeImage(problem, category, options, base64_image)
