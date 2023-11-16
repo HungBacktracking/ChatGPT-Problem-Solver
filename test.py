@@ -1,27 +1,47 @@
-import os
-import torch
-from PIL import Image
-from transformers import CLIPProcessor, CLIPModel
+import base64
+import requests
 
-# Load the pre-trained CLIP model and processor
-model_name = "openai/clip-vit-base-patch16"
-processor = CLIPProcessor.from_pretrained(model_name)
-model = CLIPModel.from_pretrained(model_name)
+# OpenAI API Key
+api_key = "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"
 
-# Load and process the image
-# image_path = "data/diagrams/diagram4.png"
-image_path = os.path.join(os.path.dirname(__file__), "data", "diagrams", "diagram4.png")
-image = Image.open(image_path)
-inputs = processor(text=["a photo of", "a picture of"], images=image, return_tensors="pt")
+# Function to encode the image
+def encode_image(image_path):
+  with open(image_path, "rb") as image_file:
+    return base64.b64encode(image_file.read()).decode('utf-8')
 
-# Forward pass to get the image embedding
-outputs = model(**inputs)
-image_embedding = outputs.logits_per_image
-text_descriptions = [processor.decode(int(t), skip_special_tokens=True) for t in outputs.logits_per_text]
+# Path to your image
+image_path = "data/diagrams/diagram0.png"
 
-# Print the image embedding
-print("Image Embedding Shape:", image_embedding.shape)
-print("Image Embedding Values:", image_embedding)
-print("Text Descriptions:", text_descriptions)
+# Getting the base64 string
+base64_image = encode_image(image_path)
 
-# You can also use the image embedding for downstream tasks like image classification or similarity checks with other images.
+headers = {
+  "Content-Type": "application/json",
+  "Authorization": f"Bearer {api_key}"
+}
+
+payload = {
+  "model": "gpt-4-vision-preview",
+  "messages": [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "text",
+          "text": "I have to answer the question:\"The figure above shows three spinners A, B and C with numbers on it. If each of every number has an equal probability of being the sector on which the arrow stops, what is the probability that the sum of these three numbers is an even number?\" This image is a necessary part to solve the question. Please find the answer! Note that you only need to return the answer without explain."
+        },
+        {
+          "type": "image_url",
+          "image_url": {
+            "url": f"data:image/jpeg;base64,{base64_image}"
+          }
+        }
+      ]
+    }
+  ],
+  "max_tokens": 300
+}
+
+response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
+
+print(response.json()['choices'][0]['message']['content'])
