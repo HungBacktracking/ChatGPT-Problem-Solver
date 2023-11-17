@@ -12,5 +12,12 @@
         "options": "a ) 350 , b ) 250 , c ) 450 , d ) 550 , e ) 650",
         "diagramRef": "",
         "category": "general"
+    },
+    {
+        "id": 6805,
+        "Problem": "Which of the following cities in Baxterville had a population in 1986 that was approximately \\(\\frac{1}{2}\\) that of its population in 1999? I. Richmont II. Pierdson III. Thomasville",
+        "options": "a)I only , b)II only , c)III only , d)I and III only , e)I, II, and III",
+        "diagramRef": "diagram201.png",
+        "category": ""
     }
 ]

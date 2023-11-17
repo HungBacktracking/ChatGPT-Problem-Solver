@@ -78,66 +78,26 @@ def getResponseForImage(problem, category, options, image_path):
     print(response.choices[0].message.content, "image")
     return str(response.choices[0].message.content)
 
+
 if __name__ == "__main__":
     tests = read_jsonl("./data/all_test_round1.json")
-    print(len(tests))
-    pre = 0
-    for problem in tests:
-        cur = problem["id"]
-        if cur - pre != 1:
-            print(pre, cur)
-        pre = cur
-    exit(0)
     with open('./results/result.txt', 'a') as f:
         for problem in tests:
             responese = ""
-            if int(problem["id"]) >= 9307:
-                while responese == "":
-                    try:
-                        t1 = time.time()
-                        if problem["diagramRef"] != "":
-                            responese = getResponseForImage(problem["Problem"], problem["category"], problem["options"], problem["diagramRef"])
-                        else:
-                            responese = getResponse(problem["Problem"], problem["category"], problem["options"])
-                        t2 = time.time()
-                        time_request = t2 - t1
-                        if time_request > 1.5:
-                            time_request -= float("{:.1f}".format(time_request - 1.4))
-            
-                        f.write(responese + '\t' + str(time_request) + '\n')
-                    except:
-                        print("Waiting...")
-                        time.sleep(20)
-                        continue
-            continue
-
-            t = [0.6918647289276123, 0.7964246273040771, 0.8114933967590332, 0.701409101486206]
-            if int(problem["id"]) >= 2739 and int(problem["id"]) < 7288:
-                k = 1
-                # if problem["options"] != "":
-                #     random_number = random.randint(1, 4)
-                #     responese = chr(ord('a') + random_number - 1)
-                #     t2 = time.time()
-                #     time_request = t2 - t1 + t[random_number - 1]
-                #     f.write(responese + '\t' + str(time_request) + '\n')
-            # elif int(problem["id"]) >= 7288: Quan trong
-            elif int(problem["id"]) >= 7292:
-                while responese == "":
-                    try:
-                        t1 = time.time()
-                        if problem["diagramRef"] != "":
-                            responese = getResponseForImage(problem["Problem"], problem["category"], problem["options"], problem["diagramRef"])
-                        else:
-                            responese = getResponse(problem["Problem"], problem["category"], problem["options"])
-                        t2 = time.time()
-                        time_request = t2 - t1
-                        if time_request > 1.5:
-                            time_request -= float("{:.1f}".format(time_request - 1.4))
-            
-                        f.write(responese + '\t' + str(time_request) + '\n')
-                    except:
-                        print("Waiting...")
-                        time.sleep(20)
-                        continue
+            while responese == "":
+                try:
+                    t1 = time.time()
+                    if problem["diagramRef"] != "":
+                        responese = getResponseForImage(problem["Problem"], problem["category"], problem["options"], problem["diagramRef"])
+                    else:
+                        responese = getResponse(problem["Problem"], problem["category"], problem["options"])
+                    t2 = time.time()
+                    time_request = t2 - t1
+        
+                    f.write(responese + '\t' + str(time_request) + '\n')
+                except:
+                    print("Waiting...")
+                    time.sleep(20)
+                    continue
 
     
