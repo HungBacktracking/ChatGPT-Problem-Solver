@@ -1,103 +1,72 @@
-import base64
-import json
-import requests
-import time 
 from openai import OpenAI
-import random
 
-def read_jsonl(path: str):
-    with open(path) as f:
-        data = json.load(f)
-        return data
-
-# OpenAI API Key
-with open("openai_api_key.txt", "r") as f:
-    api_key = f.readline()
-
-# Function to encode the image
-def encode_image(image_path):
-  with open(image_path, "rb") as image_file:
-    return base64.b64encode(image_file.read()).decode('utf-8')
-  
-def getResponse(problem, category, options):
-    categoryDetail = ""
-    if category != "":
-       categoryDetail = f"The category of this problem is {category}."
-
-    optionDetail = ""
-    if options != "":
-        optionDetail = f"And the options is {options}."
-
-    client = OpenAI(api_key = api_key)
-
-    completion = client.chat.completions.create(
-        model="gpt-4-1106-preview",
-        messages=[
-            {"role": "system", "content": "You are a excellent professor, who can answer exactly anything."},
-            {"role": "user", "content": f"I have to answer the question:\"{problem}\" {categoryDetail} {optionDetail} Let\'s find the answer! Note that you only need to return the answer without explain.\n For example, if you have a question \"a large box contains 18 small boxes and each small box contains 25 chocolate bars . how many chocolate bars are in the large box ?\" If there is no options, you have to write the answer directly: \"450\". But if it has the options is \"a ) 350 , b ) 250 , c ) 450 , d ) 550 , e ) 650\" Then just write the answer: \"c\", do not write \"c ) 450\" or \"450\". Remember just write \"c\". If the question is asked about the percentage or something include \"%\" or \"!\" or \"$\" and the answer is \"50%\", you don\'t need to write \"50%\", just write \"50\". And do not include the double-quotes \" in answer. \n Remember just write the \"a\" or \"b\" or \"c\" or \"d\" if the question has options.\n If you are confused about the question, just write one answer, do not explain anything. Do not write the ways like \"The answer is: b\". Just write \"b\"."}
-        ],
-        max_tokens = 20,
-        temperature = 0.2
-    )
-    print(completion.choices[0].message.content)
-    return str(completion.choices[0].message.content)
-
-def getResponseForImage(problem, category, options, image_path):
-    image_path = "./data/diagrams/" + image_path
-    base64_image = encode_image(image_path)
-
-    categoryDetail = ""
-    if category != "":
-       categoryDetail = f"The category of this problem is {category}."
-    
-    optionDetail = ""
-    if options != "":
-        optionDetail = f"And the options is {options}."
-
-    client = OpenAI(api_key = api_key)
-       
-    response = client.chat.completions.create(
-        model="gpt-4-vision-preview",
-        messages=[
-            {
-            "role": "user",
-            "content": [
-                {"type": "text", "text": f"You are a excellent professor, who can answer exactly anything.\nI have to answer the question:\"{problem}\" {categoryDetail} {optionDetail} You also have a image, this image is a necessary part to solve the question. Please find the answer! Note that you only need to return the answer without explain.\n For example, if you have a question \"a large box contains 18 small boxes and each small box contains 25 chocolate bars . how many chocolate bars are in the large box ?\" If there is no options, you have to write the answer directly: \"450\". But if it has the options is \"a ) 350 , b ) 250 , c ) 450 , d ) 550 , e ) 650\" Then just write the answer: \"c\", do not write \"c ) 450\" or \"450\". Remember just write \"c\". If the question is asked about the percentage or something include \"%\" or \"!\" or \"$\" and the answer is \"50%\", you don\'t need to write \"50%\", just write \"50\". And do not include the double-quotes \" in answer.\n Remember just write the \"a\" or \"b\" or \"c\" or \"d\" if the question has options.\n If you are confused about the question, just write one answer, do not explain anything. Do not write the ways like \"The answer is: b\". Just write \"b\"."},
-                {
-                "type": "image_url",
-                "image_url": {
-                    "url": f"data:image/jpeg;base64,{base64_image}",
-                },
-                },
-            ],
-            }
-        ],
-        max_tokens = 20,
-        temperature = 0.2
-    )
-    print(response.choices[0].message.content, "image")
-    return str(response.choices[0].message.content)
+# Key
+api_key = "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"
+client = OpenAI(api_key=api_key)
 
 
-if __name__ == "__main__":
-    tests = read_jsonl("./data/all_test_round1.json")
-    with open('./results/result.txt', 'a') as f:
-        for problem in tests:
-            responese = ""
-            while responese == "":
-                try:
-                    t1 = time.time()
-                    if problem["diagramRef"] != "":
-                        responese = getResponseForImage(problem["Problem"], problem["category"], problem["options"], problem["diagramRef"])
-                    else:
-                        responese = getResponse(problem["Problem"], problem["category"], problem["options"])
-                    t2 = time.time()
-                    time_request = t2 - t1
-        
-                    f.write(responese + '\t' + str(time_request) + '\n')
-                except:
-                    print("Waiting...")
-                    time.sleep(20)
-                    continue
+# Upload a file with an "assistants" purpose
+# file = client.files.create(
+#   file=open("knowledges.json", "rb"),
+#   purpose='assistants'
+# )
 
-    
+# Upload a file with an "assistants" purpose
+file_names = ["knowledges_small_1.json", "knowledges_small_2.json", "knowledges_small_3.json", "knowledges_small_4.json",
+              "knowledges_small_5.json", "knowledges_small_6.json", "knowledges_small_7.json", "knowledges_small_8.json",
+              "knowledges_small_9.json", "knowledges_small_10.json"]
+
+# Loop through each file name and upload it
+file_ids = []
+for file_name in file_names:
+    with open(file_name, "rb") as file:
+        file_object = client.files.create(
+            file=file,
+            purpose='assistants'
+        )
+        file_ids.append(file_object.id)
+        print(f"Uploaded {file_name}")
+
+# Add the file to the assistant
+assistant = client.beta.assistants.create(
+  instructions="You are a excellent professor, who can answer exactly anything.\nI have to answer the question:\"{problem}\" {categoryDetail} {optionDetail} You also have a image, this image is a necessary part to solve the question. Please find the answer! Note that you only need to return the answer without explain.\n For example, if you have a question \"a large box contains 18 small boxes and each small box contains 25 chocolate bars . how many chocolate bars are in the large box ?\" If there is no options, you have to write the answer directly: \"450\". But if it has the options is \"a ) 350 , b ) 250 , c ) 450 , d ) 550 , e ) 650\" Then just write the answer: \"c\", do not write \"c ) 450\" or \"450\". Remember just write \"c\". If the question is asked about the percentage or something include \"%\" or \"!\" or \"$\" and the answer is \"50%\", you don\'t need to write \"50%\", just write \"50\". And do not include the double-quotes \" in answer.\n Remember just write the \"a\" or \"b\" or \"c\" or \"d\" if the question has options.\n If you are confused about the question, just write one answer, do not explain anything. Do not write the ways like \"The answer is: b\". Just write \"b\".",
+  model="gpt-4-1106-preview",
+  tools=[{"type": "retrieval"}],
+  file_ids=file_ids
+)
+
+# Create thread
+thread = client.beta.threads.create()
+
+# Ask for user input
+user_question = input("Please enter your question: ")
+
+# Add message to thread with the user input
+message = client.beta.threads.messages.create(
+    thread_id=thread.id,
+    role="user",
+    content=user_question
+)
+
+# Run the assistant
+run = client.beta.threads.runs.create(
+    thread_id=thread.id,
+    assistant_id=assistant.id,
+    instructions="You are a excellent professor, who can answer exactly anything.\nI have to answer the question:\"{problem}\" {categoryDetail} {optionDetail} You also have a image, this image is a necessary part to solve the question. Please find the answer! Note that you only need to return the answer without explain.\n For example, if you have a question \"a large box contains 18 small boxes and each small box contains 25 chocolate bars . how many chocolate bars are in the large box ?\" If there is no options, you have to write the answer directly: \"450\". But if it has the options is \"a ) 350 , b ) 250 , c ) 450 , d ) 550 , e ) 650\" Then just write the answer: \"c\", do not write \"c ) 450\" or \"450\". Remember just write \"c\". If the question is asked about the percentage or something include \"%\" or \"!\" or \"$\" and the answer is \"50%\", you don\'t need to write \"50%\", just write \"50\". And do not include the double-quotes \" in answer.\n Remember just write the \"a\" or \"b\" or \"c\" or \"d\" if the question has options.\n If you are confused about the question, just write one answer, do not explain anything. Do not write the ways like \"The answer is: b\". Just write \"b\"."
+)
+
+# Wait for the assistant response and retrieve it
+run = client.beta.threads.runs.retrieve(
+    thread_id=thread.id,
+    run_id=run.id
+)
+
+# Fetching all messages in the thread
+messages = client.beta.threads.messages.list(
+    thread_id=thread.id
+)
+
+# Printing the assistant's response
+for msg in messages.data:
+    if msg.role == "assistant":
+        print(msg.content)
