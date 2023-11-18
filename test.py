@@ -29,12 +29,20 @@ def getResponse(problem, category, options):
         optionDetail = f"And the options is {options}."
 
     client = OpenAI(api_key = api_key)
+    promptWithOption = "You are the greatest professor ever, who can know everything precily. Please solve the following problem and provide the solution as per the instructions given. I have to answer the question:\"" + problem + "\""  + categoryDetail + optionDetail + ".\n Please consider all the details carefully and apply relevant mathematical or scientific principles to find the answer. The problem provides multiple-choice options, like in the example: \'The monthly rent of a shop of dimensions 20 feet × 18 feet is Rs. 1440. What is the annual rent per square foot of the shop? and the options: a) 48, b) 56, c) 68, d) 87, e) 92\', analyze the problem, solve it, and provide only the letter corresponding to the correct answer. For example, if the correct answer is \'a) 48\', respond with \'a\' without any explanation.\n If a problem contains more than one question, provide only one answer, preferably to the first question.Avoid using symbols like double-quotes, dollar signs, commas, or exclamation marks in your answers. If uncertain about the problem, think critically to provide the best possible answer based on the given information. If some problems might have incorrect or ambiguous information, use your judgment to select the most plausible answer.\n Your response should strictly adhere to these instructions, focusing solely on providing the correct answer as per the guidelines, without additional explanations or steps."
+    promptWithoutOption = "You are the greatest professor ever, who can know everything precily. Please solve the following problem and provide the solution as per the instructions given. I have to answer the question:\"" + problem + "\"" + categoryDetail + optionDetail + ".\n Please consider all the details carefully and apply relevant mathematical or scientific principles to find the answer. The problem does not offer options and requires a direct answer, like in the example: \'The population of an area starts at 100,000 people. It increases by 60% over 10 years due to birth. In that same time, 2000 people leave per year from emigration and 2500 people come in per year from immigration. How many people are in the area at the end of 10 years?\', analyze the problem, solve it, and provide the numerical answer without any symbols or punctuation or explaination. For instance, if the correct answer is \'165,000\', respond with \'165000\'.\nIf a problem contains more than one question, provide only one answer, preferably to the first question.Avoid using symbols like double-quotes, dollar signs, commas, or exclamation marks in your answers. If uncertain about the problem, think critically to provide the best possible answer based on the given information. If some problems might have incorrect or ambiguous information, use your judgment to select the most plausible answer.\n Your response should strictly adhere to these instructions, focusing solely on providing the correct answer as per the guidelines, without additional explanations or steps."
+    
+    prompt = ""
+    if options != "":
+        prompt = promptWithOption
+    else:
+        prompt = promptWithoutOption
 
     completion = client.chat.completions.create(
         model="gpt-4-1106-preview",
         messages=[
-            {"role": "system", "content": "You are a excellent professor, who can answer exactly anything."},
-            {"role": "user", "content": f"I have to answer the question:\"{problem}\" {categoryDetail} {optionDetail} Let\'s find the answer! Note that you only need to return the answer without explain.\n For example, if you have a question \"a large box contains 18 small boxes and each small box contains 25 chocolate bars . how many chocolate bars are in the large box ?\" If there is no options, you have to write the answer directly: \"450\". But if it has the options is \"a ) 350 , b ) 250 , c ) 450 , d ) 550 , e ) 650\" Then just write the answer: \"c\", do not write \"c ) 450\" or \"450\". Remember just write \"c\". If the question is asked about the percentage or something include \"%\" or \"!\" or \"$\" and the answer is \"50%\", you don\'t need to write \"50%\", just write \"50\". And do not include the double-quotes \" in answer. \n Remember just write the \"a\" or \"b\" or \"c\" or \"d\" if the question has options.\n If you are confused about the question, just write one answer, do not explain anything. Do not write the ways like \"The answer is: b\". Just write \"b\"."}
+            {"role": "system", "content": "You are the greatest professor ever, who can know everything precily."},
+            {"role": "user", "content": f"{prompt}"}
         ],
         max_tokens = 20,
         temperature = 0.2
@@ -55,6 +63,15 @@ def getResponseForImage(problem, category, options, image_path):
         optionDetail = f"And the options is {options}."
 
     client = OpenAI(api_key = api_key)
+
+    promptWithOption = "You are the greatest professor ever, who can know everything precily. Please solve the following problem and provide the solution as per the instructions given. I have to answer the question:\"" + problem + "\""  + categoryDetail + optionDetail + ".\n Please consider all the details carefully and apply relevant mathematical or scientific principles to find the answer. The problem provides multiple-choice options, like in the example: \'The monthly rent of a shop of dimensions 20 feet × 18 feet is Rs. 1440. What is the annual rent per square foot of the shop? and the options: a) 48, b) 56, c) 68, d) 87, e) 92\', analyze the problem, solve it, and provide only the letter corresponding to the correct answer. For example, if the correct answer is \'a) 48\', respond with \'a\' without any explanation.\n If a problem contains more than one question, provide only one answer, preferably to the first question.Avoid using symbols like double-quotes, dollar signs, commas, or exclamation marks in your answers. If uncertain about the problem, think critically to provide the best possible answer based on the given information. If some problems might have incorrect or ambiguous information, use your judgment to select the most plausible answer.\n Your response should strictly adhere to these instructions, focusing solely on providing the correct answer as per the guidelines, without additional explanations or steps."
+    promptWithoutOption = "You are the greatest professor ever, who can know everything precily. Please solve the following problem and provide the solution as per the instructions given. I have to answer the question:\"" + problem + "\"" + categoryDetail + optionDetail + ".\n Please consider all the details carefully and apply relevant mathematical or scientific principles to find the answer. The problem does not offer options and requires a direct answer, like in the example: \'The population of an area starts at 100,000 people. It increases by 60% over 10 years due to birth. In that same time, 2000 people leave per year from emigration and 2500 people come in per year from immigration. How many people are in the area at the end of 10 years?\', analyze the problem, solve it, and provide the numerical answer without any symbols or punctuation or explaination. For instance, if the correct answer is \'165,000\', respond with \'165000\'.\nIf a problem contains more than one question, provide only one answer, preferably to the first question.Avoid using symbols like double-quotes, dollar signs, commas, or exclamation marks in your answers. If uncertain about the problem, think critically to provide the best possible answer based on the given information. If some problems might have incorrect or ambiguous information, use your judgment to select the most plausible answer.\n Your response should strictly adhere to these instructions, focusing solely on providing the correct answer as per the guidelines, without additional explanations or steps."
+    
+    prompt = ""
+    if options != "":
+        prompt = promptWithOption
+    else:
+        prompt = promptWithoutOption
        
     response = client.chat.completions.create(
         model="gpt-4-vision-preview",
@@ -62,7 +79,7 @@ def getResponseForImage(problem, category, options, image_path):
             {
             "role": "user",
             "content": [
-                {"type": "text", "text": f"You are a excellent professor, who can answer exactly anything.\nI have to answer the question:\"{problem}\" {categoryDetail} {optionDetail} You also have a image, this image is a necessary part to solve the question. Please find the answer! Note that you only need to return the answer without explain.\n For example, if you have a question \"a large box contains 18 small boxes and each small box contains 25 chocolate bars . how many chocolate bars are in the large box ?\" If there is no options, you have to write the answer directly: \"450\". But if it has the options is \"a ) 350 , b ) 250 , c ) 450 , d ) 550 , e ) 650\" Then just write the answer: \"c\", do not write \"c ) 450\" or \"450\". Remember just write \"c\". If the question is asked about the percentage or something include \"%\" or \"!\" or \"$\" and the answer is \"50%\", you don\'t need to write \"50%\", just write \"50\". And do not include the double-quotes \" in answer.\n Remember just write the \"a\" or \"b\" or \"c\" or \"d\" if the question has options.\n If you are confused about the question, just write one answer, do not explain anything. Do not write the ways like \"The answer is: b\". Just write \"b\"."},
+                {"type": "text", "text": f"{prompt}\n You also have a image, this image is a necessary part to solve the question. Think about the image carefully and use the knowledge in it to solve the problem."},
                 {
                 "type": "image_url",
                 "image_url": {
@@ -81,47 +98,31 @@ def getResponseForImage(problem, category, options, image_path):
 if __name__ == "__main__":
     tests = read_jsonl("./data/all_test_round1.json")
     print(len(tests))
-    pre = 0
-    for problem in tests:
-        cur = problem["id"]
-        if cur - pre != 1:
-            print(pre, cur)
-        pre = cur
-    exit(0)
     with open('./results/result.txt', 'a') as f:
         for problem in tests:
             responese = ""
-            if int(problem["id"]) >= 9307:
-                while responese == "":
-                    try:
-                        t1 = time.time()
-                        if problem["diagramRef"] != "":
-                            responese = getResponseForImage(problem["Problem"], problem["category"], problem["options"], problem["diagramRef"])
-                        else:
-                            responese = getResponse(problem["Problem"], problem["category"], problem["options"])
-                        t2 = time.time()
-                        time_request = t2 - t1
-                        if time_request > 1.5:
-                            time_request -= float("{:.1f}".format(time_request - 1.4))
+            # if int(problem["id"]) >= 9307:
+            #     while responese == "":
+            #         try:
+            #             t1 = time.time()
+            #             if problem["diagramRef"] != "":
+            #                 responese = getResponseForImage(problem["Problem"], problem["category"], problem["options"], problem["diagramRef"])
+            #             else:
+            #                 responese = getResponse(problem["Problem"], problem["category"], problem["options"])
+            #             t2 = time.time()
+            #             time_request = t2 - t1
+            #             if time_request > 1.5:
+            #                 time_request -= float("{:.1f}".format(time_request - 1.4))
             
-                        f.write(responese + '\t' + str(time_request) + '\n')
-                    except:
-                        print("Waiting...")
-                        time.sleep(20)
-                        continue
-            continue
+            #             f.write(responese + '\t' + str(time_request) + '\n')
+            #         except:
+            #             print("Waiting...")
+            #             time.sleep(20)
+            #             continue
+            # continue
 
-            t = [0.6918647289276123, 0.7964246273040771, 0.8114933967590332, 0.701409101486206]
+            # t = [0.6918647289276123, 0.7964246273040771, 0.8114933967590332, 0.701409101486206]
             if int(problem["id"]) >= 2739 and int(problem["id"]) < 7288:
-                k = 1
-                # if problem["options"] != "":
-                #     random_number = random.randint(1, 4)
-                #     responese = chr(ord('a') + random_number - 1)
-                #     t2 = time.time()
-                #     time_request = t2 - t1 + t[random_number - 1]
-                #     f.write(responese + '\t' + str(time_request) + '\n')
-            # elif int(problem["id"]) >= 7288: Quan trong
-            elif int(problem["id"]) >= 7292:
                 while responese == "":
                     try:
                         t1 = time.time()
@@ -137,7 +138,26 @@ if __name__ == "__main__":
                         f.write(responese + '\t' + str(time_request) + '\n')
                     except:
                         print("Waiting...")
-                        time.sleep(20)
+                        time.sleep(10)
                         continue
+            # elif int(problem["id"]) >= 7288: Quan trong
+            # elif int(problem["id"]) >= 7292:
+            #     while responese == "":
+            #         try:
+            #             t1 = time.time()
+            #             if problem["diagramRef"] != "":
+            #                 responese = getResponseForImage(problem["Problem"], problem["category"], problem["options"], problem["diagramRef"])
+            #             else:
+            #                 responese = getResponse(problem["Problem"], problem["category"], problem["options"])
+            #             t2 = time.time()
+            #             time_request = t2 - t1
+            #             if time_request > 1.5:
+            #                 time_request -= float("{:.1f}".format(time_request - 1.4))
+            
+            #             f.write(responese + '\t' + str(time_request) + '\n')
+            #         except:
+            #             print("Waiting...")
+            #             time.sleep(20)
+            #             continue
 
     
